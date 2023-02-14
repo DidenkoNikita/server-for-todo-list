@@ -1,19 +1,50 @@
-const app = require('express')();
+const express = require('express');
+const app = express();
 const cors = require('cors');
 
-const data = [{id: 'b1', title: "Board1", tasks: [{idT: 1, completed: false, titleT: "task1"}, {idT: 2, completed: true, titleT: "task2"}, {idT: 3, completed: false, titleT: "task3"}]},
-              {id: 'b2', title: "Board2", tasks: [{idT: 4, completed: false, titleT: "task4"}, {idT: 5, completed: true, titleT: "task5"}, {idT: 6, completed: false, titleT: "task6"}]}];
+let data = [];
+
+//нужно обновить данные
 
 
 const host = '127.0.0.1';
 const port = 7000;
 
+app.use(express.json());
 app.use(cors());
 
 app.get('/boards', (req, res) => {
-  // res.status(200).type('text/plain')
   res.status(200).json(data);
 })
+
+app.post('/boards', (req, res) => {
+  const reqData = req.body
+  if (reqData.id) {
+    data.push(reqData);
+    res.status(200).json(reqData);
+  } else {
+    res.status(422).json({error: 'Bad data'});
+  }
+})
+
+app.delete('/boards', (req, res) => {
+  const reqData = req.body;
+  if (reqData.id) {
+
+    let idIndex = data.indexOf(reqData.id)
+    if (idIndex) {
+      data.splice(idIndex);
+    } else {
+      res.status(404).json({error: 'Not found'});
+    }
+
+    res.status(200).json({id: reqData.id});
+  } else {
+    res.status(422).json({error: 'Bad data'});
+  }
+})
+
+console.log(data);
 
 app.use((req, res, next) => {
   res.status(404).type('text/plain')
