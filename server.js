@@ -3,9 +3,7 @@ const app = express();
 const cors = require('cors');
 
 let data = [];
-
-//нужно обновить данные
-
+let tasks = [];
 
 const host = '127.0.0.1';
 const port = 7000;
@@ -17,8 +15,12 @@ app.get('/boards', (req, res) => {
   res.status(200).json(data);
 })
 
+app.get('/tasks', (req, res) => {
+  res.status(200).json(tasks);
+})
+
 app.post('/boards', (req, res) => {
-  const reqData = req.body
+  const reqData = req.body;
   if (reqData.id) {
     data.push(reqData);
     res.status(200).json(reqData);
@@ -27,6 +29,17 @@ app.post('/boards', (req, res) => {
   }
 })
 
+app.post('/tasks', (req, res) => {
+  const reqData = req.body;
+  if (reqData.idT) {
+    // if(board.id === reqData.id) {
+        tasks.push(reqData);
+        res.status(200).json(reqData);
+        // }
+      } else {
+        res.status(422).json({error: 'Bad data'});
+  }
+})
 app.delete('/boards', (req, res) => {
   const reqData = req.body;
   if (reqData.id) {
