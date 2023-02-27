@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
+const cookieParser = require('cookie-parser');
 dotenv.config();
 // const session = require('express-session');
 // const passport = require('passport');
@@ -18,53 +19,9 @@ function generateAccessToken(username) {
 const host = '127.0.0.1';
 const port = 7000;
 
-let data = [{
-  "id": "7a7432fa-aa90-48e2-9502-e5ec8c838855",
-  "title": "Доска 1",
-  "userId": "1",
-  "tasks": []
-},
-{
-  "id": "fc79851f-9c0d-43be-8e05-1526f83d2ebf",
-  "title": "Доска 2",
-  "userId": "2",
-  "tasks": []
-},
-{
-  "id": "fc79851f-9c0d-43be-8e05-1526f83d2ebf",
-  "title": "Доска 2",
-  "userId": "2",
-  "tasks": []
-},
-{
-  "id": "85f7e1f1-1aad-4d6c-adaf-2bfc28fc4ce0",
-  "title": "Доска 3",
-  "userId": "3",
-  "tasks": []
-}];
-let tasks = [ {
-  "idT": "00d5170f-be4a-442c-8a6e-8598f7bb465c",
-  "completed": false,
-  "titleT": "Задачи пользователя NikitaDidenko",
-  "id": "7a7432fa-aa90-48e2-9502-e5ec8c838855"
-},
-{
-  "idT": "f62d9cba-3023-4d04-a384-ad66659a2272",
-  "completed": false,
-  "titleT": "Задачи пользователя VadimAgarkov",
-  "id": "fc79851f-9c0d-43be-8e05-1526f83d2ebf"
-},
-{
-  "idT": "89641457-49ff-42b4-aacb-0bdfb400f4be",
-  "completed": false,
-  "titleT": "Задачи пользователя NikolayKareev",
-  "id": "85f7e1f1-1aad-4d6c-adaf-2bfc28fc4ce0"
-}];
-let users = [
-             {"userId": "1", "login": "NikitaDidenko", "password": "123456"}, 
-             {"userId": "2", "login": "VadimAgarkov", "password": "bebra"}, 
-             {"userId": "3", "login": "NikolayKareev", "password": "kolasik"}
-            ];
+let data = [];
+let tasks = [];
+let users = [];
 
 // const checkAuth = () => {
 //   return app.use((req, res, next) => {
@@ -132,47 +89,47 @@ app.use(cors());
 
 app.use(express.json());
 
+app.use(cookieParser('secret key'));
+
 app.get('/login', (req, res) => {
   res.status(200).json(users);
 })
 
 app.post('/login', (req, res) => {
   const reqData = req.body;
-  if (reqData) {
-    let user = users.find((item) => {
-      return reqData.userId == item.userId && reqData.login == item.login && reqData.password == item.password
-    })
-    if (user) {
-      let board = data.filter((elem) => {
-        return reqData.userId === elem.userId;
-      })
-      if (board) {
-        res.status(200).json(board);
-      } else {
-        res.status(200).send('No boards')
-      }
-    } else {
-      res.status(200).json('User not found');
-    }
+  const tokenKliento = generateAccessToken({ username: reqData.login });
 
-  } else {
-    res.status(422).json({error: 'Bad data'});
+  let user = users.find((item) => {
+    return reqData.login === item.login && reqData.password === item.password;
+  })
+  if (user) {
+    // let token = generateAccessToken({ username: reqData.login });
+    const token = generateAccessToken({ username: user.login });
+    // console.log(token);
+    if (tokenKliento === token) {
+      console.log('нихуя себе оно работает');
+      console.log('token::', token);
+      console.log('tokenKliento::', tokenKliento);
+      res.status(200).json(token);
+    } else {
+      res.status(403).json({error: 'Bad data'});
+    }
   }
 })
 
-app.post('/create-user', (req, res) => {
+app.post('/signup', (req, res) => {
   const reqData = req.body;
   if (reqData) {
     let user = users.find((item) => {
-      return reqData.login == item.login
+      return reqData.login === item.login
     })
     if (user) {
       res.status(200).send('Login busy')
     } else {
-      reqData.jwt = generateAccessToken({ username: reqData.login });
-      res.cookie('token', reqData.jwt, { httpOnly: false });
+      token = generateAccessToken({ username: reqData.login });
+      reqData.token = token
       users.push(reqData);
-      res.status(200).send('User successfully registered');
+      res.status(200).json(token);
     }
   } else {
     res.status(422).json({error: 'Bad data'});
