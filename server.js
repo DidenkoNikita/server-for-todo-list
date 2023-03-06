@@ -13,7 +13,29 @@ const cors = require('cors');
 let TOKEN_SECRET = require('crypto').randomBytes(64).toString('hex');
 
 function generateAccessToken(username) {
-  return jwt.sign(username, process.env.TOKEN_SECRET, { expiresIn: '1800s' });
+  return jwt.sign(username, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30m' });
+}
+
+function generateRefreshToken(username) {
+  return jwt.sign(username, process.env.TOKEN_SECRET, { expiresIn: '30d' });
+}
+
+const validateAccessToken = (accessToken) => {
+  try {
+    const userData = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+    return userData;
+  } catch (e) {
+    return null;
+  }
+}
+
+const validateRefreshToken = (token) => {
+  try {
+    const userData = jwt.verify(token, process.env.TOKEN_SECRET);
+    return userData;
+  } catch (e) {
+    return null;
+  }
 }
 
 const host = '127.0.0.1';
@@ -95,27 +117,123 @@ app.get('/login', (req, res) => {
   res.status(200).json(users);
 })
 
-app.post('/login', (req, res) => {
+app.post('/login', function(req, res, next) {
   const reqData = req.body;
-  const tokenKliento = generateAccessToken({ username: reqData.login });
+  const authorisationHeader = req.header('authorization');
+  console.log('reqData', reqData);
+  console.log('authorisationHeader', authorisationHeader);
 
-  let user = users.find((item) => {
-    return reqData.login === item.login && reqData.password === item.password;
-  })
-  if (user) {
-    // let token = generateAccessToken({ username: reqData.login });
-    const token = generateAccessToken({ username: user.login });
-    // console.log(token);
-    if (tokenKliento === token) {
-      console.log('нихуя себе оно работает');
-      console.log('token::', token);
-      console.log('tokenKliento::', tokenKliento);
-      res.status(200).json(token);
+  if (reqData) {
+    let user = users.find((item) => {
+      return reqData.login === item.login && reqData.password === item.password;
+    })
+    if (user) {
+      if(!authorisationHeader) {
+        res.status(400).json('Полозователь не авторизован');
+      } else {
+        const accessToken = authorisationHeader.split(' ')[1];
+        if (!accessToken) {
+          console.log('нету токена')
+          res.status(401).json('Bad token');
+        } else {
+          console.log('accessToken::', accessToken);
+          const userData = validateAccessToken(accessToken);
+          if (!userData) {
+            next()
+          } else {
+            res.status(200).json(
+              // accessToken: 
+              accessToken);
+          }
+        }
+      }
     } else {
-      res.status(403).json({error: 'Bad data'});
+      res.status(400).json('Полозователь не авторизован');
     }
   }
-})
+}, function(req, res, next) {
+  const authorisationHeaderTwo = req.header('authorizationTwo');
+  if (!authorisationHeaderTwo) {
+    res.status(400).json('Полозователь не авторизован');
+  } else {
+    const refreshToken = authorisationHeaderTwo.split(' ')[1];
+    if (!refreshToken) {
+      res.status(401).json('Bad token');
+    } else {
+      const userDataTwo = validateRefreshToken(refreshToken);
+      if (!userDataTwo) {
+        res.status(403).json('Bad token');
+      } else {
+        const reqData = req.body;
+        let user = users.find((item) => {
+          return reqData.login === item.login && reqData.password === item.password;
+        })
+        let accessToken = generateAccessToken({ userId: user.userId });
+        reqData.accessToken = accessToken;
+        users.push(reqData);
+        console.log('access token new', accessToken);
+        res.status(200).json({accessToken: accessToken});
+      }
+    }
+  }
+  next();
+});
+
+// function accessTokenRequestUponLogin(req, res, next) {
+//   const reqData = req.body;
+//   const authorisationHeader = req.header('authorization');
+//   console.log('reqData', reqData);
+//   console.log('authorisationHeader', authorisationHeader);
+
+//   if (reqData) {
+//     let user = users.find((item) => {
+//       return reqData.login === item.login && reqData.password === item.password;
+//     })
+//     if (user) {
+//       if(!authorisationHeader) {
+//         console.log('Полозователь не авторизован')
+//         res.status(400).json('Полозователь не авторизован');
+//       } else {
+//         const accessToken = authorisationHeader.split(' ')[1];
+//         if (!accessToken) {
+//           console.log('нету токена')
+//           res.status(401).json('Bad token');
+//         } else {
+//           console.log('accessToken::', accessToken);
+//           const userData = validateAccessToken(accessToken);
+//           console.log('userData::', userData)
+//           if (!userData) {
+//             next()
+//           }
+//         }
+//       }
+//     } else {
+//       res.status(200).json({accessToken: accessToken});
+//     }
+//   }
+// } 
+
+// function updateAccessToken(req, res, next) {
+//   const authorisationHeaderTwo = req.header('authorizationTwo');
+//   if (!authorisationHeaderTwo) {
+//     res.status(400).json('Полозователь не авторизован');
+//   } else {
+//     const refreshToken = authorisationHeaderTwo.split(' ')[1];
+//     if (!refreshToken) {
+//       res.status(401).json('Bad token');
+//     } else {
+//       const userDataTwo = validateRefreshToken(refreshToken);
+//       if (!userDataTwo) {
+//         res.status(403).json('Bad token');
+//       } else {
+//         let accessToken = generateAccessToken({ userId: user.userId });
+//         reqData.accessToken = accessToken;
+//         users.push(reqData);
+//         res.status(200).json({accessToken: accessToken});
+//       }
+//     }
+//   }
+// }
 
 app.post('/signup', (req, res) => {
   const reqData = req.body;
@@ -124,12 +242,15 @@ app.post('/signup', (req, res) => {
       return reqData.login === item.login
     })
     if (user) {
-      res.status(200).send('Login busy')
+      res.status(403).send('Login busy')
+      res.end(console.log("error 403 bro"))
     } else {
-      token = generateAccessToken({ username: reqData.login });
-      reqData.token = token
+      let refreshToken = generateRefreshToken({ username: reqData.login });
+      let accessToken = generateAccessToken({ userId: reqData.userId });
+      reqData.accessToken = accessToken;
+      reqData.refreshToken = refreshToken;
       users.push(reqData);
-      res.status(200).json(token);
+      res.status(200).json({refreshToken: refreshToken, accessToken: accessToken});
     }
   } else {
     res.status(422).json({error: 'Bad data'});
