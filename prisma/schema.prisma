@@ -1,0 +1,37 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id_user   String   @id @default(uuid())
+  login     String
+  password  String
+}
+
+model Tokens {
+  id_user        String   @id @default(uuid())
+  access_token   String
+  refresh_token  String
+}
+
+model Boards {
+  id_board      String   @id @default(uuid())
+  id_user       String   
+  title         String
+}
+
+model Tasks {
+  id_user     String   
+  id_board    String  
+  id_task     String   @id @default(uuid())
+  title       String
+  completed   Boolean
+ }
