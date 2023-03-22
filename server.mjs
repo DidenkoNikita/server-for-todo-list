@@ -1,28 +1,29 @@
-const express = require('express');
+console.log('INIT APP');
+import express, { json } from 'express';
+import jwt from 'jsonwebtoken';
+import { config } from 'dotenv';
+import cookieParser from 'cookie-parser';
+config();
+import cors from 'cors';
+import dbRequest from './prisma/db-request.mjs';
+import { userSearch } from './prisma/user-search.js';
+console.log('BEFORE crypto INIT');
+const {sign, verify} = jwt
 const app = express();
-const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv');
-const cookieParser = require('cookie-parser');
-dotenv.config();
-// const session = require('express-session');
-// const passport = require('passport');
-// const localStrategy = require('passport-local').Strategy;
-// const flash = require('connect-flash');
-const cors = require('cors');
 
-let TOKEN_SECRET = require('crypto').randomBytes(64).toString('hex');
+// let TOKEN_SECRET = require('crypto').randomBytes(64).toString('hex');
 
 function generateAccessToken(username) {
-  return jwt.sign(username, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30m' });
+  return sign(username, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30m' });
 }
 
 function generateRefreshToken(username) {
-  return jwt.sign(username, process.env.TOKEN_SECRET, { expiresIn: '30d' });
+  return sign(username, process.env.TOKEN_SECRET, { expiresIn: '30d' });
 }
 
 const validateAccessToken = (accessToken) => {
   try {
-    const userData = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+    const userData = verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
     return userData;
   } catch (e) {
     return null;
@@ -31,7 +32,7 @@ const validateAccessToken = (accessToken) => {
 
 const validateRefreshToken = (token) => {
   try {
-    const userData = jwt.verify(token, process.env.TOKEN_SECRET);
+    const userData = verify(token, process.env.TOKEN_SECRET);
     return userData;
   } catch (e) {
     return null;
@@ -45,71 +46,9 @@ let data = [];
 let tasks = [];
 let users = [];
 
-// const checkAuth = () => {
-//   return app.use((req, res, next) => {
-//     if (req.user) next()
-//     else res.redirect('/login')
-//   })
-// }
-
-// passport.serializeUser((user, done) => done(null, user));
-// passport.deserializeUser((user, done) => done(null, user));
-
-// app.use(express.json());
-// app.use(express.urlencoded({ extended: true }));
-// app.use(session({ 
-//   secret: 'you secret key',
-//   resave: true,
-//   saveUninitialized: true
-// }));
-// app.use(flash());
-// app.use(passport.initialize());
-// app.use(passport.session());
 app.use(cors());
 
-// passport.use(
-//   new localStrategy(
-//     {
-//       usernameField: 'login',
-//       passwordField: 'pwd',
-//     },
-//     (user, password, done) => {
-//       if (user !== 'test_user') {
-//         return done(null, false, {
-//           message: 'User not found',
-//         })
-//       } else if (password !== 'test_password') {
-//         return done(null, false, {
-//           message: 'Wrong password',
-//         })
-//       }
-
-//       return done(null, {id: 1, name: 'Test', age: 21 })
-//   })
-// )
-
-// app.get('/login', (req, res) => {
-//   res.send('Login page. Please, authorize')
-// })
-
-// app.use((req, res, next) => {
-//   if (req.user) {
-//     next();
-//   } else {
-//     res.redirect('/login')
-//   }
-// })
-
-// app.post(
-//   '/login',
-//   passport.authenticate('local', {
-//     successRedirect: '/boards',
-//     failureRedirect: '/login', 
-//     failureFlash: true,
-//   })
-// )
-
-app.use(express.json());
+app.use(json());
 
 app.use(cookieParser('secret key'));
 
@@ -141,9 +80,7 @@ app.post('/login', function(req, res, next) {
           if (!userData) {
             next()
           } else {
-            res.status(200).json(
-              // accessToken: 
-              accessToken);
+            res.status(200).json(accessToken);
           }
         }
       }
@@ -179,79 +116,33 @@ app.post('/login', function(req, res, next) {
   next();
 });
 
-// function accessTokenRequestUponLogin(req, res, next) {
-//   const reqData = req.body;
-//   const authorisationHeader = req.header('authorization');
-//   console.log('reqData', reqData);
-//   console.log('authorisationHeader', authorisationHeader);
-
-//   if (reqData) {
-//     let user = users.find((item) => {
-//       return reqData.login === item.login && reqData.password === item.password;
-//     })
-//     if (user) {
-//       if(!authorisationHeader) {
-//         console.log('Полозователь не авторизован')
-//         res.status(400).json('Полозователь не авторизован');
-//       } else {
-//         const accessToken = authorisationHeader.split(' ')[1];
-//         if (!accessToken) {
-//           console.log('нету токена')
-//           res.status(401).json('Bad token');
-//         } else {
-//           console.log('accessToken::', accessToken);
-//           const userData = validateAccessToken(accessToken);
-//           console.log('userData::', userData)
-//           if (!userData) {
-//             next()
-//           }
-//         }
-//       }
-//     } else {
-//       res.status(200).json({accessToken: accessToken});
-//     }
-//   }
-// } 
-
-// function updateAccessToken(req, res, next) {
-//   const authorisationHeaderTwo = req.header('authorizationTwo');
-//   if (!authorisationHeaderTwo) {
-//     res.status(400).json('Полозователь не авторизован');
-//   } else {
-//     const refreshToken = authorisationHeaderTwo.split(' ')[1];
-//     if (!refreshToken) {
-//       res.status(401).json('Bad token');
-//     } else {
-//       const userDataTwo = validateRefreshToken(refreshToken);
-//       if (!userDataTwo) {
-//         res.status(403).json('Bad token');
-//       } else {
-//         let accessToken = generateAccessToken({ userId: user.userId });
-//         reqData.accessToken = accessToken;
-//         users.push(reqData);
-//         res.status(200).json({accessToken: accessToken});
-//       }
-//     }
-//   }
-// }
-
-app.post('/signup', (req, res) => {
+app.post('/signup', async (req, res) => {
+  console.log('Registration.................')
   const reqData = req.body;
   if (reqData) {
-    let user = users.find((item) => {
-      return reqData.login === item.login
-    })
-    if (user) {
-      res.status(403).send('Login busy')
-      res.end(console.log("error 403 bro"))
-    } else {
+    // let user = users.find((item) => {
+    //   return reqData.login === item.login
+    // })
+    // if (user) {
+    //   res.status(403).send('Login busy')
+    //   res.end(console.log("error 403 bro"))
+    // } else {
       let refreshToken = generateRefreshToken({ username: reqData.login });
       let accessToken = generateAccessToken({ userId: reqData.userId });
       reqData.accessToken = accessToken;
       reqData.refreshToken = refreshToken;
-      users.push(reqData);
+      // users.push(reqData);
+      dbRequest.createUser(reqData);
+      let login = reqData.login;
+      console.log(login)
+      let idUser = await  userSearch(login)
+      console.log('idUser::', idUser)
+      // console.log(reqData)
+      let data = {accessToken, refreshToken, ...idUser};
+    if(data)
+    await dbRequest.createTokens(data);
       res.status(200).json({refreshToken: refreshToken, accessToken: accessToken});
-    }
+    // }
   } else {
     res.status(422).json({error: 'Bad data'});
   }
@@ -269,8 +160,8 @@ app.get('/tasks', (req, res) => {
 
 app.post('/boards', (req, res) => {
   const reqData = req.body;
-  if (reqData.id) {
-    data.push(reqData);
+  if (reqData) {
+    dbRequest.createBoard(reqData)
     res.status(200).json(reqData);
   } else {
     res.status(422).json({error: 'Bad data'});
@@ -330,7 +221,6 @@ app.put('/tasks', (req, res) => {
       if(task.idT === reqData.idT) {
         task.completed = !reqData.completed;
         res.status(200).json(task);
-        // res.status(200).json({idT: task.idT, completed: task.completed, titleT: task.titleT, id: task.id})
       }
     })
   } else {

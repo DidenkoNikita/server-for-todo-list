@@ -11,27 +11,36 @@ datasource db {
 }
 
 model Users {
-  id_user   String   @id @default(uuid())
-  login     String
-  password  String
+  id       Int     @id @default(autoincrement())
+  login    String  @unique
+  password String
+  Tokens   Tokens?
+  Boards   Boards[]
+  Tasks    Tasks[]
 }
 
 model Tokens {
-  id_user        String   @id @default(uuid())
-  access_token   String
-  refresh_token  String
+  id            Int     @id @unique @default(autoincrement())
+  user_id       Int     @unique
+  user          Users   @relation(fields: [user_id], references: [id])
+  access_token  String?
+  refresh_token String?
 }
 
 model Boards {
-  id_board      String   @id @default(uuid())
-  id_user       String   
-  title         String
+  id      Int     @id @default(autoincrement())
+  user_id Int     
+  user    Users   @relation(fields: [user_id], references: [id])
+  title   String?
+  Tasks   Tasks[]
 }
 
 model Tasks {
-  id_user     String   
-  id_board    String  
-  id_task     String   @id @default(uuid())
-  title       String
-  completed   Boolean
- }
+  id        Int     @id @default(autoincrement())
+  user_id   Int     
+  user      Users   @relation(fields: [user_id], references: [id])
+  board_id  Int     
+  board     Boards  @relation(fields: [board_id], references: [id])
+  title     String?
+  completed Boolean @default(false)
+}
