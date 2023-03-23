@@ -120,29 +120,20 @@ app.post('/signup', async (req, res) => {
   console.log('Registration.................')
   const reqData = req.body;
   if (reqData) {
-    // let user = users.find((item) => {
-    //   return reqData.login === item.login
-    // })
-    // if (user) {
-    //   res.status(403).send('Login busy')
-    //   res.end(console.log("error 403 bro"))
-    // } else {
       let refreshToken = generateRefreshToken({ username: reqData.login });
       let accessToken = generateAccessToken({ userId: reqData.userId });
-      reqData.accessToken = accessToken;
-      reqData.refreshToken = refreshToken;
-      // users.push(reqData);
-      dbRequest.createUser(reqData);
+      
+      await  dbRequest.createUser(reqData);
       let login = reqData.login;
       console.log(login)
       let idUser = await  userSearch(login)
       console.log('idUser::', idUser)
-      // console.log(reqData)
+      let id = idUser.id;
       let data = {accessToken, refreshToken, ...idUser};
-    if(data)
-    await dbRequest.createTokens(data);
-      res.status(200).json({refreshToken: refreshToken, accessToken: accessToken});
-    // }
+
+      // if(data)
+      await dbRequest.createTokens(data);
+        res.status(200).json({refreshToken: refreshToken, accessToken: accessToken, id: id});
   } else {
     res.status(422).json({error: 'Bad data'});
   }

@@ -11,6 +11,7 @@ class DBRequest {
           password: password
         }
       })
+      console.log('проверка', user);
       return user;
     } catch(e) {
       return null;
@@ -18,22 +19,20 @@ class DBRequest {
   }
 
   async createTokens(data){
-    const {accessToken, refreshToken, idUser} = data;
+    const {accessToken, refreshToken, id: idUser} = data;
     console.log('data', data);
     try {
-      if(data !== {}) {
         const token = await prisma.tokens.create({
-          data:
-           {
+          data: {
             user_id: idUser,
             access_token: accessToken,
             refresh_token: refreshToken
           }
         })
         console.log("token-test", token);
-        return token
-      }
+        return token;
     } catch(e) {
+      console.log(e)
       return new Error(e);
     }
   }

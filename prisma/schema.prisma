@@ -20,7 +20,7 @@ model Users {
 }
 
 model Tokens {
-  id            Int     @id @unique @default(autoincrement())
+  id            Int     @id @default(autoincrement())
   user_id       Int     @unique
   user          Users   @relation(fields: [user_id], references: [id])
   access_token  String?
