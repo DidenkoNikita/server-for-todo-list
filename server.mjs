@@ -5,8 +5,9 @@ import { config } from 'dotenv';
 import cookieParser from 'cookie-parser';
 config();
 import cors from 'cors';
-import dbRequest from './prisma/db-request.mjs';
-import { userSearch } from './prisma/user-search.js';
+import { boardSearch, userSearch } from './db-helper-queries/search.js';
+import dbCreate from './db-requests/db-create.mjs'
+import dbRead from './db-requests/db-read.mjs';
 console.log('BEFORE crypto INIT');
 const {sign, verify} = jwt
 const app = express();
@@ -123,7 +124,7 @@ app.post('/signup', async (req, res) => {
       let refreshToken = generateRefreshToken({ username: reqData.login });
       let accessToken = generateAccessToken({ userId: reqData.userId });
       
-      await  dbRequest.createUser(reqData);
+      await  dbCreate.createUser(reqData);
       let login = reqData.login;
       console.log(login)
       let idUser = await  userSearch(login)
@@ -132,41 +133,54 @@ app.post('/signup', async (req, res) => {
       let data = {accessToken, refreshToken, ...idUser};
 
       // if(data)
-      await dbRequest.createTokens(data);
+      await dbCreate.createTokens(data);
         res.status(200).json({refreshToken: refreshToken, accessToken: accessToken, id: id});
   } else {
     res.status(422).json({error: 'Bad data'});
   }
 })
   
-app.get('/boards', (req, res) => {
-  res.status(200).json(data);
+app.post('/read_boards', async (req, res) => {
+  const reqData = req.body;
+  const idUser = reqData.idUser;
+  let boards = await dbRead.readBoard(idUser);
+  res.status(200).json(boards);
 })
 
 //удалил  checkAuth(), строка 79
 
-app.get('/tasks', (req, res) => {
+app.post('/read_tasks', async (req, res) => {
+  const reqData = req.body;
+  console.log("reqData::", reqData);
+  let tasks = await dbRead.readTask(reqData);
+  console.log("server-tasks::", tasks);
   res.status(200).json(tasks);
 })
 
-app.post('/boards', (req, res) => {
+app.post('/boards', async (req, res) => {
   const reqData = req.body;
   if (reqData) {
-    dbRequest.createBoard(reqData)
+    await dbCreate.createBoard(reqData)
+
+    let idUser = reqData.idUser;
+    console.log("idUser", idUser)
+
+    let idBoard = await boardSearch(idUser);
+    console.log("idBoard", idBoard);
+    reqData.idBoard = idBoard.id
+    console.log('id', reqData.idBoard);
     res.status(200).json(reqData);
   } else {
     res.status(422).json({error: 'Bad data'});
   }
 })
 
-app.post('/tasks', (req, res) => {
+app.post('/tasks', async (req, res) => {
   const reqData = req.body;
-  if (reqData.idT) {
-    // if(board.id === reqData.id) {
-        tasks.push(reqData);
-        res.status(200).json(reqData);
-        // }
-      } else {
+  if (reqData) {
+    await dbCreate.createTask(reqData);
+    res.status(200).json(reqData);
+  } else {
         res.status(422).json({error: 'Bad data'});
   }
 })

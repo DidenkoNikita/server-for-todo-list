@@ -1,7 +1,7 @@
 // import { Users, Tokens, Boards, Tasks } from "./prismaClient.mjs";
-import prisma from "./prismaClient.mjs";
+import prisma from "../prisma/prismaClient.mjs";
 
-class DBRequest {
+class DBcreate {
   async createUser(reqData) {
     const {login, password} = reqData;
     try {
@@ -38,11 +38,12 @@ class DBRequest {
   }
 
   async createBoard(data){
-    const {title} = data;
+    const {title, idUser} = data;
     try {
       const board = await prisma.boards.create({
         data: {
-          title
+          user_id: idUser,
+          title: title
         }
       })
       return board
@@ -52,11 +53,13 @@ class DBRequest {
   }
 
   async createTask(data) {
-    const {title} = data;
+    const {title, idUser, idBoard} = data;
     try {
       const task = await prisma.tasks.create({
         data: {
-          title
+          user_id: idUser,
+          board_id: idBoard,
+          title: title
         }
       })
       return task
@@ -64,16 +67,6 @@ class DBRequest {
       return null;
     }
   }
-
-  // async userSearch(login) {
-  //   const user = await prisma.users.findUnique({
-  //     where : {
-  //       login: login
-  //     }
-  //   })
-  //   console.log('user', user)
-  //   return user
-  // }
 }
 
-export default new DBRequest();
+export default new DBcreate();
