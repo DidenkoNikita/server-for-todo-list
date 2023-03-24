@@ -1,6 +1,6 @@
 import prisma from "../prisma/prismaClient.mjs";
 
-class DBRequest {
+class DBRead {
   async readBoard(idUser) {
     try {
       const boards = await prisma.boards.findMany({
@@ -32,4 +32,4 @@ class DBRequest {
   }
 }
 
-export default new DBRequest();
+export default new DBRead();

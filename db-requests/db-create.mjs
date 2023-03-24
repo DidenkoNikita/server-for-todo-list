@@ -1,7 +1,7 @@
 // import { Users, Tokens, Boards, Tasks } from "./prismaClient.mjs";
 import prisma from "../prisma/prismaClient.mjs";
 
-class DBcreate {
+class DBCreate {
   async createUser(reqData) {
     const {login, password} = reqData;
     try {
@@ -69,4 +69,4 @@ class DBcreate {
   }
 }
 
-export default new DBcreate();
+export default new DBCreate();

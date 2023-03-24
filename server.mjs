@@ -8,6 +8,9 @@ import cors from 'cors';
 import { boardSearch, userSearch } from './db-helper-queries/search.js';
 import dbCreate from './db-requests/db-create.mjs'
 import dbRead from './db-requests/db-read.mjs';
+import dbAuthentication from './db-requests/db-authentication.mjs';
+import dbUpdate from './db-requests/db-update.mjs';
+import dbDelete from './db-requests/db-delete.mjs';
 console.log('BEFORE crypto INIT');
 const {sign, verify} = jwt
 const app = express();
@@ -57,39 +60,35 @@ app.get('/login', (req, res) => {
   res.status(200).json(users);
 })
 
-app.post('/login', function(req, res, next) {
+app.post('/login', async function(req, res, next) {
   const reqData = req.body;
   const authorisationHeader = req.header('authorization');
   console.log('reqData', reqData);
   console.log('authorisationHeader', authorisationHeader);
 
   if (reqData) {
-    let user = users.find((item) => {
-      return reqData.login === item.login && reqData.password === item.password;
-    })
-    if (user) {
-      if(!authorisationHeader) {
-        res.status(400).json('Полозователь не авторизован');
+    await dbAuthentication.authentication(reqData);
+    if(!authorisationHeader) {
+      res.status(400).json('Полозователь не авторизован');
+    } else {
+      const accessToken = authorisationHeader.split(' ')[1];
+      if (!accessToken) {
+        console.log('нету токена')
+        res.status(401).json('Bad token');
       } else {
-        const accessToken = authorisationHeader.split(' ')[1];
-        if (!accessToken) {
-          console.log('нету токена')
-          res.status(401).json('Bad token');
-        } else {
-          console.log('accessToken::', accessToken);
-          const userData = validateAccessToken(accessToken);
-          if (!userData) {
+        console.log('accessToken::', accessToken);
+        const userData = validateAccessToken(accessToken);
+        if (!userData) {
             next()
-          } else {
-            res.status(200).json(accessToken);
-          }
+        } else {
+          res.status(200).json(accessToken);
         }
       }
-    } else {
-      res.status(400).json('Полозователь не авторизован');
     }
+  } else {
+    res.status(400).json('Полозователь не авторизован');
   }
-}, function(req, res, next) {
+}, async function(req, res, next) {
   const authorisationHeaderTwo = req.header('authorizationTwo');
   if (!authorisationHeaderTwo) {
     res.status(400).json('Полозователь не авторизован');
@@ -103,12 +102,11 @@ app.post('/login', function(req, res, next) {
         res.status(403).json('Bad token');
       } else {
         const reqData = req.body;
-        let user = users.find((item) => {
-          return reqData.login === item.login && reqData.password === item.password;
-        })
-        let accessToken = generateAccessToken({ userId: user.userId });
+        const user = await dbAuthentication.authentication(reqData);
+        const id = user.id
+        let accessToken = generateAccessToken({ userId: id });
+        dbAuthentication.updateAccessToken(id, accessToken)
         reqData.accessToken = accessToken;
-        users.push(reqData);
         console.log('access token new', accessToken);
         res.status(200).json({accessToken: accessToken});
       }
@@ -185,49 +183,37 @@ app.post('/tasks', async (req, res) => {
   }
 })
 
-app.delete('/boards', (req, res) => {
+app.delete('/boards', async (req, res) => {
   const reqData = req.body;
-  if (reqData.id) {
+  if (reqData) {
+    const id = reqData.id;
+    await dbDelete.deleteBoard(id);
+    await dbDelete.deleteManyTasks(id);
+    res.status(200).json({id: id});
+  } else {
+    res.status(422).json({error: 'Bad data'});
+  }
+})
 
-    let idIndex = data.indexOf(reqData.id)
-    if (idIndex) {
-      data.splice(idIndex);
-    } else {
-      res.status(404).json({error: 'Not found'});
-    }
-
+app.delete('/tasks', async (req, res) => {
+  const reqData = req.body;
+  if (reqData) {
+    const id = reqData.id;
+    console.log(id);
+    await dbDelete.deleteTask(id);
     res.status(200).json({id: reqData.id});
   } else {
     res.status(422).json({error: 'Bad data'});
   }
 })
 
-app.delete('/tasks', (req, res) => {
+app.post('/tasks_completed', async (req, res) => {
   const reqData = req.body;
-  if (reqData.idT) {
-
-    let idIndex = tasks.indexOf(reqData.idT)
-    if (idIndex) {
-      tasks.splice(idIndex);
-    } else {
-      res.status(404).json({error: 'Not found'});
-    }
-
-    res.status(200).json({idT: reqData.idT});
-  } else {
-    res.status(422).json({error: 'Bad data'});
-  }
-})
-
-app.put('/tasks', (req, res) => {
-  const reqData = req.body;
-  if (reqData.idT) {
-    tasks.forEach((task) => {
-      if(task.idT === reqData.idT) {
-        task.completed = !reqData.completed;
-        res.status(200).json(task);
-      }
-    })
+  if (reqData) {
+    const id = reqData.id;
+    const completed = !reqData.completed;
+    const task = await dbUpdate.updateCompletedTask(id, completed);
+    res.status(200).json(task);
   } else {
     res.status(422).json({error: 'Bad data'});
   }
