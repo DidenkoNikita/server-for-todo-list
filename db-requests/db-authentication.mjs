@@ -3,11 +3,11 @@ import prisma from "../prisma/prismaClient.mjs";
 class DBAuthentication {
   async authentication(reqData) {
     const {login, password} = reqData
+    console.log("login and password::", login, password);
     try {
-      const user = await prisma.user.findUnique({
+      const user = await prisma.users.findUnique({
         where: {
-          login,
-          password
+          login: login
         }
       })
       return user;
