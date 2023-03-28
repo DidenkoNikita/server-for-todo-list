@@ -10,7 +10,7 @@ class DBRead {
       })
       return boards;
     } catch(e) {
-      return null;
+      return e;
     }
   }
 
@@ -23,7 +23,6 @@ class DBRead {
           board_id: idBoard
         }
       })
-      console.log("tasks::", tasks);
       return tasks;
     } catch(e) {
       console.log(e);

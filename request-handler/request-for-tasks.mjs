@@ -6,9 +6,7 @@ import dbUpdate from "../db-requests/db-update.mjs";
 class RequestForTasks {
   async searchTasks (req, res) {
     const reqData = req.body;
-    console.log("reqData::", reqData);
-    let tasks = await dbRead.readTask(reqData);
-    console.log("server-tasks::", tasks);
+    const tasks = await dbRead.readTask(reqData);
     res.status(200).json(tasks);
   }
 
@@ -26,7 +24,6 @@ class RequestForTasks {
     const reqData = req.body;
     if (reqData) {
       const id = reqData.id;
-      console.log(id);
       await dbDelete.deleteTask(id);
       res.status(200).json({id: reqData.id});
     } else {

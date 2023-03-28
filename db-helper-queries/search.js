@@ -12,7 +12,7 @@ export async function userSearch(login) {
       })
       return data;
     } catch(e) {
-      return new Error(e);
+      return e;
     }
 }
 
@@ -28,6 +28,6 @@ export async function boardSearch(idUser) {
       })
       return data;
     } catch(e) {
-      return new Error(e);
+      return e;
     }
 }

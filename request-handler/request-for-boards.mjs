@@ -15,12 +15,9 @@ class RequestForBoards {
     const reqData = req.body;
     if (reqData) {
       await dbCreate.createBoard(reqData)
-  
       let idUser = reqData.idUser;
-  
       let idBoard = await boardSearch(idUser);
       reqData.idBoard = idBoard.id
-      console.log('id', reqData.idBoard);
       res.status(200).json(reqData);
     } else {
       res.status(422).json({error: 'Bad data'});

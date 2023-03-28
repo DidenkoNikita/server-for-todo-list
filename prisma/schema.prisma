@@ -23,7 +23,6 @@ model Tokens {
   id            Int     @id @default(autoincrement())
   user_id       Int     @unique
   user          Users   @relation(fields: [user_id], references: [id])
-  access_token  String?
   refresh_token String?
 }
 

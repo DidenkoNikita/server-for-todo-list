@@ -9,7 +9,6 @@ class DBDelete {
         }
       })
     } catch(e) {
-      console.log("error::", e);
       return e;
     }
   }
@@ -22,7 +21,6 @@ class DBDelete {
         }
       })
     } catch(e) {
-      console.log("error::", e);
       return e;
     }
   }
@@ -36,7 +34,7 @@ class DBDelete {
       })
       return tasks;
     } catch(e) {
-
+      return e;
     }
   }
 }

@@ -1,9 +1,7 @@
 import prisma from "../prisma/prismaClient.mjs";
 
 class DBAuthentication {
-  async authentication(reqData) {
-    const {login, password} = reqData
-    console.log("login and password::", login, password);
+  async authentication(login) {
     try {
       const user = await prisma.users.findUnique({
         where: {
@@ -12,24 +10,35 @@ class DBAuthentication {
       })
       return user;
     } catch(e) {
-      console.log("error::", e);
       return e;
     }
   }
 
-  async updateAccessToken(id, accessToken) {
+  async updateToken(id, refreshToken) {
     try {
       const token = await prisma.tokens.update({
         where: {
           user_id: id
         },
         data: {
-          access_token: accessToken
+          refresh_token: refreshToken
         }
       })
       return token;
     } catch(e) {
-      console.log("error::", e);
+      return e;
+    }
+  }
+
+  async findToken(refreshToken) {
+    try {
+      const tokenData = await prisma.tokens.findUnique({
+        where: {
+          refreshToken
+        }
+      })
+      return tokenData;
+    } catch(e) {
       return e;
     }
   }

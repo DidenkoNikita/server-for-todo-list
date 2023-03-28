@@ -13,7 +13,6 @@ class DBUpdate {
       })
       return tasks;
     } catch(e) {
-      console.log("error::", e);
       return e;
     }
   }

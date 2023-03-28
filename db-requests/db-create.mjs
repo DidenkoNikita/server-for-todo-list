@@ -1,4 +1,3 @@
-// import { Users, Tokens, Boards, Tasks } from "./prismaClient.mjs";
 import prisma from "../prisma/prismaClient.mjs";
 
 class DBCreate {
@@ -14,26 +13,22 @@ class DBCreate {
       console.log('проверка', user);
       return user;
     } catch(e) {
-      return null;
+      return e;
     }
   }
 
   async createTokens(data){
-    const {accessToken, refreshToken, id: idUser} = data;
-    console.log('data', data);
+    const {refreshToken, id: idUser} = data;
     try {
         const token = await prisma.tokens.create({
           data: {
             user_id: idUser,
-            access_token: accessToken,
             refresh_token: refreshToken
           }
         })
-        console.log("token-test", token);
         return token;
     } catch(e) {
-      console.log(e)
-      return new Error(e);
+      return e;
     }
   }
 
@@ -48,7 +43,7 @@ class DBCreate {
       })
       return board
     } catch(e) {
-      return null;
+      return e;
     }
   }
 
@@ -64,7 +59,7 @@ class DBCreate {
       })
       return task
     } catch(e) {
-      return null;
+      return e;
     }
   }
 }

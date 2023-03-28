@@ -6,7 +6,6 @@ export const validateAccessToken = (accessToken) => {
     const userData = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
     return userData;
   } catch (e) {
-    console.log("validate error access::", e);
     return e;
   }
 }
@@ -16,7 +15,6 @@ export const validateRefreshToken = (token) => {
     const userData = jwt.verify(token, process.env.TOKEN_SECRET);
     return userData;
   } catch (e) {
-    console.log("validate error refresh::", e);
     return e;
   }
 }
