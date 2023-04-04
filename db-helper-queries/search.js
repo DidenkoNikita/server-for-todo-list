@@ -10,6 +10,7 @@ export async function userSearch(login) {
           id: true
         }
       })
+      console.log("userSearch::", data);
       return data;
     } catch(e) {
       return e;

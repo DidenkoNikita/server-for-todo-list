@@ -3,18 +3,18 @@ const {verify} = jwt;
 
 export const validateAccessToken = (accessToken) => {
   try {
-    const userData = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
-    return userData;
+    const validateAccessToken = jwt.verify(accessToken, process.env.JWT_ACCESS_SECRET);
+    return validateAccessToken;
   } catch (e) {
-    return e;
+    return null;
   }
 }
 
-export const validateRefreshToken = (token) => {
+export const validateRefreshToken = (refreshToken) => {
   try {
-    const userData = jwt.verify(token, process.env.TOKEN_SECRET);
-    return userData;
+    const validateRefreshToken = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    return validateRefreshToken;
   } catch (e) {
-    return e;
+    return e.code;
   }
 }

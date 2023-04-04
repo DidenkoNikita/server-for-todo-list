@@ -37,6 +37,17 @@ class DBDelete {
       return e;
     }
   }
+  async deleteToken(id) {
+    try {
+      await prisma.tokens.delete({
+        where: {
+          user_id: id
+        }
+      })
+    } catch(e) {
+      return e;
+    }
+  }
 }
 
 export default new DBDelete();

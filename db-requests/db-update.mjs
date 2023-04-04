@@ -16,6 +16,27 @@ class DBUpdate {
       return e;
     }
   }
+  
+  async updateTokens(data){
+    const {refreshToken, id: idUser} = data;
+    try {
+        const token = await prisma.tokens.upsert({
+          where: {
+            user_id: idUser,
+          },
+          update: {
+            refresh_token: refreshToken
+          },
+          create: {
+            user_id: idUser,
+            refresh_token: refreshToken
+          }
+        })
+        return token;
+    } catch(e) {
+      return e;
+    }
+  }
 }
 
 export default new DBUpdate();

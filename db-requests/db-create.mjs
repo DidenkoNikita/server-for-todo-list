@@ -1,8 +1,7 @@
 import prisma from "../prisma/prismaClient.mjs";
 
 class DBCreate {
-  async createUser(reqData) {
-    const {login, password} = reqData;
+  async createUser(login, password) {
     try {
       const user = await prisma.users.create({
         data: {

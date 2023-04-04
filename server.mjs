@@ -7,7 +7,7 @@ import cors from 'cors';
 import requestForUser from './request-handler/request-for-user.mjs';
 import requestForBoards from './request-handler/request-for-boards.mjs';
 import requestForTasks from './request-handler/request-for-tasks.mjs';
-import { refresh } from './authorization-service/refresh-token.mjs';
+import { authMiddleware } from './middleware/auth-middleware.mjs';
 
 const app = express();
 
@@ -21,13 +21,17 @@ app.use(cookieParser());
 app.post('/login', requestForUser.checkAccessToken);
 app.post('/signup', requestForUser.createUser);
 app.get('/refresh', requestForUser.checkRefreshToken);
+// app.post('/read_boards', authMiddleware, requestForBoards.searchBoards);
 app.post('/read_boards', requestForBoards.searchBoards);
-app.post('/read_tasks', requestForTasks.searchTasks);
+
+app.post('/read_tasks', authMiddleware, requestForTasks.searchTasks);
 app.post('/boards', requestForBoards.createBoard);
 app.post('/tasks', requestForTasks.createTask);
 app.delete('/boards', requestForBoards.deleteBoard);
 app.delete('/tasks', requestForTasks.deleteTask);
+app.delete('/logout', requestForUser.logout);
 app.post('/tasks_completed', requestForTasks.completedTask);
+
 
 app.use((req, res) => {
   res.status(404).type('text/plain')
