@@ -1,4 +1,3 @@
-import { validationResult } from "express-validator";
 import { generateAccessToken, generateRefreshToken } from "../authorization-service/generate-token.mjs";
 import { passwordHashing, passwordVerifying } from "../authorization-service/password-hashing.mjs";
 import { refresh } from "../authorization-service/refresh-token.mjs";
@@ -7,7 +6,8 @@ import dbAuthentication from "../db-requests/db-authentication.mjs";
 import dbCreate from "../db-requests/db-create.mjs";
 import dbDelete from "../db-requests/db-delete.mjs";
 import dbUpdate from "../db-requests/db-update.mjs";
-import apiError from "../exceptions/api-error.mjs";
+
+// теперь токены передаются только в куки перепиши, ЗАЕБАЛ
 
 class RequestForUser {
   async checkAccessToken(req, res, next) {
@@ -22,8 +22,6 @@ class RequestForUser {
         const accessToken = generateAccessToken({ userId: id });
         const data = {refreshToken, ...idUser};
         const update = await dbUpdate.updateTokens(data);
-        console.log('update token::', update);
-        console.log("refresh token::", refreshToken);
         res.cookie('refreshToken', refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true})
         res.json({accessToken: accessToken, id: id});
       } else {
@@ -50,23 +48,27 @@ class RequestForUser {
 
   async createUser (req, res, next) {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return next(apiError.BadRequest('Ошибка при валидации', errors.array()))
-      }
       const {login, password} = req.body;
-      console.log("login::", login);
       const refreshToken = generateRefreshToken({ username: login });
       const passwordHash = await passwordHashing(password);
-      await  dbCreate.createUser(login, passwordHash);
+      const user = await  dbCreate.createUser(login, passwordHash);
+
+      console.log("user::", user);
+
       const idUser = await userSearch(login)
-      console.log("idUser::", idUser);
       const id = idUser.id;
       const accessToken = generateAccessToken({ userId: id });
       const data = {refreshToken, id};
       await dbCreate.createTokens(data);
-      res.cookie('refreshToken', refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true})
-      res.json({accessToken: accessToken, id: idUser.id});
+      if (user === null) {
+        res.status(403);
+        res.end();
+      } else {
+        res.cookie('refreshToken', refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true})
+        // res.cookie('accessToken', accessToken, {maxAge: 1800000, httpOnly: true})
+        res.json({id, accessToken});
+        res.end();
+      }
     } catch(e) {
       next(e);
     }

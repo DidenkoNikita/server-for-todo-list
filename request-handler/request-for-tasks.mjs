@@ -7,13 +7,19 @@ import dbUpdate from "../db-requests/db-update.mjs";
 class RequestForTasks {
   async searchTasks (req, res) {
     const accessToken = req.headers.authorization;
-    console.log(accessToken);
     const validateToken = accessToken.split(' ')[1];
-    console.log(validateToken);
     const validate = validateAccessToken(validateToken);
-    console.log(validate);
-    if (validate === null) { 
-      res.status(404).json("ой ты invalid");
+    if (!validate) { 
+      const refreshToken = req.cookies.refreshToken
+      const validateRefresh = validateRefreshToken(refreshToken);
+      if (validateRefresh === null) {
+        res.status(401).json("ой ты invalid");
+      }
+      const reqData =  req.body;
+      const idUser = reqData.id;
+      const newAccessToken = generateAccessToken({idUser});
+      const boards = await dbRead.readBoard(idUser);
+      res.status(200).json(...boards, newAccessToken)
     } else {
       const reqData = req.body;
       const tasks = await dbRead.readTask(reqData);
@@ -24,8 +30,9 @@ class RequestForTasks {
   async createTask (req, res) {
     const reqData = req.body;
     if (reqData) {
-      await dbCreate.createTask(reqData);
-      res.status(200).json(reqData);
+      console.log("TASKAAAA!!! ::", reqData);
+      const task = await dbCreate.createTask(reqData);
+      res.status(200).json(task);
     } else {
       res.status(422).json({error: 'Bad data'});
     }

@@ -15,17 +15,15 @@ class DBRead {
   }
 
   async readTask(data) {
-    const { idUser, idBoard } = data;
+    const { idUser } = data;
     try {
       const tasks = await prisma.tasks.findMany({
         where: {
-          user_id: idUser,
-          board_id: idBoard
+          user_id: idUser
         }
       })
       return tasks;
     } catch(e) {
-      console.log(e);
       return e;
     }
   }

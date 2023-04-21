@@ -1,3 +1,5 @@
+// теперь токены передаются только в куки перепиши, ЗАЕБАЛ
+
 import express, { json } from 'express';
 import { config } from 'dotenv';
 import cookieParser from 'cookie-parser';
@@ -14,7 +16,12 @@ const app = express();
 const host = '127.0.0.1';
 const port = 7000;
 
-app.use(cors());
+app.use(cors(
+  {
+    credentials: true,
+    origin: process.env.CLIENT_URL
+  }
+));
 app.use(json());
 app.use(cookieParser());
 

@@ -9,34 +9,33 @@ class DBCreate {
           password: password
         }
       })
-      console.log('проверка', user);
       return user;
-    } catch(e) {
-      return e;
+    } catch {
+      return null;
     }
   }
 
   async createTokens(data){
     const {refreshToken, id: idUser} = data;
     try {
-        const token = await prisma.tokens.create({
-          data: {
-            user_id: idUser,
-            refresh_token: refreshToken
-          }
-        })
-        return token;
+      const token = await prisma.tokens.create({
+        data: {
+          user_id: idUser,
+          refresh_token: refreshToken
+        }
+      })
+      return token;
     } catch(e) {
       return e;
     }
   }
 
   async createBoard(data){
-    const {title, idUser} = data;
+    const {title, user_id} = data;
     try {
       const board = await prisma.boards.create({
         data: {
-          user_id: idUser,
+          user_id: user_id,
           title: title
         }
       })
@@ -47,16 +46,17 @@ class DBCreate {
   }
 
   async createTask(data) {
-    const {title, idUser, idBoard} = data;
+    const {title, idBoard, idUser, completed} = data;
     try {
       const task = await prisma.tasks.create({
         data: {
           user_id: idUser,
           board_id: idBoard,
-          title: title
+          title: title,
+          completed: completed
         }
       })
-      return task
+      return task;
     } catch(e) {
       return e;
     }

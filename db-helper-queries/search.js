@@ -32,3 +32,18 @@ export async function boardSearch(idUser) {
       return e;
     }
 }
+
+export async function idSearch(refreshToken) {
+  try {
+    const data = await prisma.tokens.findFirst({
+      where: {
+        refresh_token: refreshToken
+      },
+      select: {
+        user_id: true
+      }
+    })
+  } catch(e) {
+    return e;
+  }
+}
