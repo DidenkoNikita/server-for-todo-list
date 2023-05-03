@@ -10,7 +10,6 @@ export async function userSearch(login) {
           id: true
         }
       })
-      console.log("userSearch::", data);
       return data;
     } catch(e) {
       return e;
@@ -33,11 +32,11 @@ export async function boardSearch(idUser) {
     }
 }
 
-export async function idSearch(refreshToken) {
+export async function idSearch(accessToken) {
   try {
     const data = await prisma.tokens.findFirst({
       where: {
-        refresh_token: refreshToken
+        access_token: accessToken
       },
       select: {
         user_id: true

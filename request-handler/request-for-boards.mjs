@@ -6,24 +6,25 @@ import dbRead from "../db-requests/db-read.mjs";
 
 class RequestForBoards {
   async searchBoards (req, res) {
-    const data = req.headers.authorization;
-    const accessToken = data?.split(' ')[1];
+    const accessToken = req.cookies.accessToken; 
     const validate = validateAccessToken(accessToken);
     if (!validate) {
       const refreshToken = req.cookies.refreshToken
       const validateRefresh = validateRefreshToken(refreshToken);
       if (validateRefresh === null) {
         res.status(401).json("ой ты invalid");
+      } else {
+        const idUser = req.body.user_id;
+        const newAccessToken = generateAccessToken({idUser});
+        res.cookie('accessToken', newAccessToken, {maxAge: 1800000, httpOnly: true})
+        const boards = await dbRead.readBoard(idUser);
+        res.status(200).json(boards);
       }
-      const reqData =  req.body;
-      const idUser = reqData.id;
-      const newAccessToken = generateAccessToken({idUser});
-      const boards = await dbRead.readBoard(idUser);
-      res.status(200).json(...boards, newAccessToken);
     } else {
-      const reqData = req.body;
-      const idUser = reqData.id;
-      let boards = await dbRead.readBoard(idUser);
+      const idUser = req.body.user_id;
+      const newAccessToken = generateAccessToken({idUser});
+      res.cookie('accessToken', newAccessToken, {maxAge: 1800000, httpOnly: true})
+      const boards = await dbRead.readBoard(idUser);
       res.status(200).json(boards);
     }
   }
@@ -43,7 +44,6 @@ class RequestForBoards {
     if (reqData) {
       const id = reqData.id;
       await dbDelete.deleteBoard(id);
-      await dbDelete.deleteManyTasks(id);
       res.status(200).json({id: id});
     } else {
       res.status(422).json({error: 'Bad data'});

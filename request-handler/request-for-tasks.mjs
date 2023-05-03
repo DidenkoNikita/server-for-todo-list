@@ -1,4 +1,5 @@
-import { validateAccessToken } from "../authorization-service/validate-token.mjs";
+import { generateAccessToken } from "../authorization-service/generate-token.mjs";
+import { validateAccessToken, validateRefreshToken } from "../authorization-service/validate-token.mjs";
 import dbCreate from "../db-requests/db-create.mjs";
 import dbDelete from "../db-requests/db-delete.mjs";
 import dbRead from "../db-requests/db-read.mjs";
@@ -6,23 +7,25 @@ import dbUpdate from "../db-requests/db-update.mjs";
 
 class RequestForTasks {
   async searchTasks (req, res) {
-    const accessToken = req.headers.authorization;
-    const validateToken = accessToken.split(' ')[1];
-    const validate = validateAccessToken(validateToken);
+    const accessToken = req.cookies.accessToken;
+    const validate = validateAccessToken(accessToken);
     if (!validate) { 
-      const refreshToken = req.cookies.refreshToken
+      const refreshToken = req.cookies.refreshToken;
       const validateRefresh = validateRefreshToken(refreshToken);
       if (validateRefresh === null) {
-        res.status(401).json("ой ты invalid");
+        res.status(402).json("ой ты invalid");
+      } else {
+        const idUser = req.body.user_id;
+        const newAccessToken = generateAccessToken({idUser});
+        res.cookie('accessToken', newAccessToken, {maxAge: 1800000, httpOnly: true})
+        const tasks = await dbRead.readTask(idUser);
+        res.status(200).json(tasks);
       }
-      const reqData =  req.body;
-      const idUser = reqData.id;
-      const newAccessToken = generateAccessToken({idUser});
-      const boards = await dbRead.readBoard(idUser);
-      res.status(200).json(...boards, newAccessToken)
     } else {
-      const reqData = req.body;
-      const tasks = await dbRead.readTask(reqData);
+      const idUser = req.body.user_id;
+      const newAccessToken = generateAccessToken({idUser});
+      res.cookie('accessToken', newAccessToken, {maxAge: 1800000, httpOnly: true})
+      const tasks = await dbRead.readTask(idUser);
       res.status(200).json(tasks);
     }
   }
@@ -30,7 +33,6 @@ class RequestForTasks {
   async createTask (req, res) {
     const reqData = req.body;
     if (reqData) {
-      console.log("TASKAAAA!!! ::", reqData);
       const task = await dbCreate.createTask(reqData);
       res.status(200).json(task);
     } else {

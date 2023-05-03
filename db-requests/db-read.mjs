@@ -14,8 +14,7 @@ class DBRead {
     }
   }
 
-  async readTask(data) {
-    const { idUser } = data;
+  async readTask(idUser) {
     try {
       const tasks = await prisma.tasks.findMany({
         where: {

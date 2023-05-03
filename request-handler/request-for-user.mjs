@@ -7,8 +7,6 @@ import dbCreate from "../db-requests/db-create.mjs";
 import dbDelete from "../db-requests/db-delete.mjs";
 import dbUpdate from "../db-requests/db-update.mjs";
 
-// теперь токены передаются только в куки перепиши, ЗАЕБАЛ
-
 class RequestForUser {
   async checkAccessToken(req, res, next) {
     try {
@@ -23,7 +21,8 @@ class RequestForUser {
         const data = {refreshToken, ...idUser};
         const update = await dbUpdate.updateTokens(data);
         res.cookie('refreshToken', refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true})
-        res.json({accessToken: accessToken, id: id});
+        res.cookie('accessToken', accessToken, {maxAge: 1800000, httpOnly: true})
+        res.json({accessToken: accessToken, user_id: id});
       } else {
         res.status(400).json('Пароль неверный!');
       }
@@ -52,9 +51,6 @@ class RequestForUser {
       const refreshToken = generateRefreshToken({ username: login });
       const passwordHash = await passwordHashing(password);
       const user = await  dbCreate.createUser(login, passwordHash);
-
-      console.log("user::", user);
-
       const idUser = await userSearch(login)
       const id = idUser.id;
       const accessToken = generateAccessToken({ userId: id });
@@ -65,7 +61,7 @@ class RequestForUser {
         res.end();
       } else {
         res.cookie('refreshToken', refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true})
-        // res.cookie('accessToken', accessToken, {maxAge: 1800000, httpOnly: true})
+        res.cookie('accessToken', accessToken, {maxAge: 1800000, httpOnly: true})
         res.json({id, accessToken});
         res.end();
       }
@@ -76,12 +72,12 @@ class RequestForUser {
 
   async logout(req, res, next) {
     try {
-      const reqData = req.body;
-      const id = reqData.id
-      await dbDelete.deleteToken(id);
+      const idUser = req.body.user_id;
+      await dbDelete.deleteToken(idUser);
+      res.clearCookie();
       res.status(200).json("Поздравляю, можете идти нахуй!!!");
     } catch(e) {
-      next(e)
+      next(e);
     }
   }
 }

@@ -32,7 +32,7 @@ class DBUpdate {
             refresh_token: refreshToken
           }
         })
-        return token;
+      return token;
     } catch(e) {
       return e;
     }
