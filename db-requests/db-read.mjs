@@ -26,6 +26,22 @@ class DBRead {
       return e;
     }
   }
+
+  async readName(idUser) {
+    try {
+      const userName = await prisma.users.findUnique({
+        where: {
+          id: idUser
+        },
+        select: {
+          login: true
+        }
+      })
+      return userName;
+    } catch(e) {
+      return e;
+    }
+  }
 }
 
 export default new DBRead();

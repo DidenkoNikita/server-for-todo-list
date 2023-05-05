@@ -5,6 +5,7 @@ import { userSearch } from "../db-helper-queries/search.js";
 import dbAuthentication from "../db-requests/db-authentication.mjs";
 import dbCreate from "../db-requests/db-create.mjs";
 import dbDelete from "../db-requests/db-delete.mjs";
+import dbRead from "../db-requests/db-read.mjs";
 import dbUpdate from "../db-requests/db-update.mjs";
 
 class RequestForUser {
@@ -15,33 +16,33 @@ class RequestForUser {
       const verifyPassword = await passwordVerifying(user.password, password);
       if (verifyPassword) {
         const refreshToken = generateRefreshToken({ username: login });
-        const idUser = await  userSearch(login)
+        const idUser = await  userSearch(login);
         const id = idUser.id;
         const accessToken = generateAccessToken({ userId: id });
         const data = {refreshToken, ...idUser};
-        const update = await dbUpdate.updateTokens(data);
-        res.cookie('refreshToken', refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true})
-        res.cookie('accessToken', accessToken, {maxAge: 1800000, httpOnly: true})
-        res.json({accessToken: accessToken, user_id: id});
+        await dbUpdate.updateTokens(data);
+        res.cookie('refreshToken', refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true});
+        res.cookie('accessToken', accessToken, {maxAge: 1800000, httpOnly: true});
+        res.json({user_id: id});
       } else {
         res.status(400).json('Пароль неверный!');
       }
     } catch(e) {
-      next(e)
+      next(e);
     }
   }
 
   async checkRefreshToken(req, res, next) {
     try {
       const {login} = req.body;
-      const idUser = await  userSearch(login)
+      const idUser = await  userSearch(login);
       const id = idUser.id;
       const {refreshToken} = req.cookies;
       const userData = await refresh(refreshToken, login, id);
-      res.cookie('refreshToken', userData.refresh_Token, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true})
+      res.cookie('refreshToken', userData.refresh_Token, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true});
       res.status(200).json({...userData});
     } catch(e) {
-      next(e)
+      next(e);
     }
   }
 
@@ -51,7 +52,7 @@ class RequestForUser {
       const refreshToken = generateRefreshToken({ username: login });
       const passwordHash = await passwordHashing(password);
       const user = await  dbCreate.createUser(login, passwordHash);
-      const idUser = await userSearch(login)
+      const idUser = await userSearch(login);
       const id = idUser.id;
       const accessToken = generateAccessToken({ userId: id });
       const data = {refreshToken, id};
@@ -60,8 +61,8 @@ class RequestForUser {
         res.status(403);
         res.end();
       } else {
-        res.cookie('refreshToken', refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true})
-        res.cookie('accessToken', accessToken, {maxAge: 1800000, httpOnly: true})
+        res.cookie('refreshToken', refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true});
+        res.cookie('accessToken', accessToken, {maxAge: 1800000, httpOnly: true});
         res.json({id, accessToken});
         res.end();
       }
@@ -75,7 +76,18 @@ class RequestForUser {
       const idUser = req.body.user_id;
       await dbDelete.deleteToken(idUser);
       res.clearCookie();
-      res.status(200).json("Поздравляю, можете идти нахуй!!!");
+      res.status(200);
+    } catch(e) {
+      next(e);
+    }
+  }
+
+  async getName(req, res, next) {
+    try {
+      const idUser = req.body.user_id;
+      const userName = await dbRead.readName(idUser);
+      const name = userName.login;
+      res.status(200).json({name});
     } catch(e) {
       next(e);
     }

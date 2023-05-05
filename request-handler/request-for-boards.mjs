@@ -9,21 +9,21 @@ class RequestForBoards {
     const accessToken = req.cookies.accessToken; 
     const validate = validateAccessToken(accessToken);
     if (!validate) {
-      const refreshToken = req.cookies.refreshToken
+      const refreshToken = req.cookies.refreshToken;
       const validateRefresh = validateRefreshToken(refreshToken);
       if (validateRefresh === null) {
-        res.status(401).json("ой ты invalid");
+        res.status(401);
       } else {
         const idUser = req.body.user_id;
         const newAccessToken = generateAccessToken({idUser});
-        res.cookie('accessToken', newAccessToken, {maxAge: 1800000, httpOnly: true})
+        res.cookie('accessToken', newAccessToken, {maxAge: 1800000, httpOnly: true});
         const boards = await dbRead.readBoard(idUser);
         res.status(200).json(boards);
       }
     } else {
       const idUser = req.body.user_id;
       const newAccessToken = generateAccessToken({idUser});
-      res.cookie('accessToken', newAccessToken, {maxAge: 1800000, httpOnly: true})
+      res.cookie('accessToken', newAccessToken, {maxAge: 1800000, httpOnly: true});
       const boards = await dbRead.readBoard(idUser);
       res.status(200).json(boards);
     }

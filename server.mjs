@@ -25,12 +25,15 @@ app.use(cookieParser());
 app.post('/login', requestForUser.checkAccessToken);
 app.post('/signup', requestForUser.createUser);
 app.get('/refresh', requestForUser.checkRefreshToken);
-app.post('/read_boards', requestForBoards.searchBoards);
 app.post('/logout', requestForUser.logout);
-app.post('/read_tasks', requestForTasks.searchTasks);
+app.post('/user', requestForUser.getName);
+
+app.post('/read_boards', requestForBoards.searchBoards);
 app.post('/boards', requestForBoards.createBoard);
-app.post('/tasks', requestForTasks.createTask);
 app.delete('/boards', requestForBoards.deleteBoard);
+
+app.post('/read_tasks', requestForTasks.searchTasks);
+app.post('/tasks', requestForTasks.createTask);
 app.delete('/tasks', requestForTasks.deleteTask);
 app.post('/tasks_completed', requestForTasks.completedTask);
 

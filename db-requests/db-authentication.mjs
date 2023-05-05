@@ -5,7 +5,7 @@ class DBAuthentication {
     try {
       const user = await prisma.users.findUnique({
         where: {
-          login: login
+          login
         }
       })
       return user;

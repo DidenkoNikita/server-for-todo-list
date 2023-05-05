@@ -31,18 +31,3 @@ export async function boardSearch(idUser) {
     return e;
   }
 }
-
-export async function idSearch(accessToken) {
-  try {
-    const data = await prisma.tokens.findFirst({
-      where: {
-        access_token: accessToken
-      },
-      select: {
-        user_id: true
-      }
-    })
-  } catch(e) {
-    return e;
-  }
-}

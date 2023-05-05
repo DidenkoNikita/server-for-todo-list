@@ -9,7 +9,6 @@ class DBDelete {
         }
       })
     } catch(e) {
-      console.log(e);
       return e;
     }
   }
@@ -23,7 +22,7 @@ class DBDelete {
       })
       await prisma.boards.delete({
         where: {
-          id: id
+          id
         }
       })
     } catch(e) {

@@ -5,13 +5,13 @@ class DBCreate {
     try {
       const user = await prisma.users.create({
         data: {
-          login: login,
-          password: password
+          login,
+          password
         }
       })
       return user;
-    } catch {
-      return null;
+    } catch(e) {
+      return e;
     }
   }
 
@@ -35,11 +35,11 @@ class DBCreate {
     try {
       const board = await prisma.boards.create({
         data: {
-          user_id: user_id,
-          title: title
+          user_id,
+          title
         }
       })
-      return board
+      return board;
     } catch(e) {
       return e;
     }
@@ -52,8 +52,8 @@ class DBCreate {
         data: {
           user_id: idUser,
           board_id: idBoard,
-          title: title,
-          completed: completed
+          title,
+          completed
         }
       })
       return task;

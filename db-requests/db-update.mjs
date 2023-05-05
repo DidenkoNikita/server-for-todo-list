@@ -5,10 +5,10 @@ class DBUpdate {
     try {
       const tasks = await prisma.tasks.update({
         where: {
-          id: id
+          id
         },
         data: {
-          completed: completed
+          completed
         }
       })
       return tasks;
