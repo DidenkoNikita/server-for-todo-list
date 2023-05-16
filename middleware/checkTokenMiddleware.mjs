@@ -14,15 +14,21 @@ export const checkTokenMiddleware =  async (req, res, next) => {
     } else {
       console.log('кефтеме');
       const {user_id} = req.body;
+      console.log('iddddddddddddd', user_id);
       const token = await tokenSearch(user_id);
-      const validateAccess = validateAccessToken(token.access_token)
+      console.log(token);
+      const validateAccess = validateAccessToken(token.access_token);
+      console.log(validateAccess);
       if (validateAccess === null) {
         res.status(401).send('Недействительный токен');
       } else {
         const idUser = req.body.user_id;
+        console.log(idUser);
         const {login} = await loginSearch(idUser);
+        console.log(login);
         const refreshToken = generateRefreshToken({ username: login }); 
-        res.status(200).json({refreshToken})
+        console.log(refreshToken);
+        res.status(201).json(refreshToken)
       }
     }
   } else {

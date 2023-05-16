@@ -34,7 +34,7 @@ export async function boardSearch(idUser) {
 
 export async function tokenSearch(user_id) {
   try {
-    const token = await prisma.tokens.findFirst({
+    const token = await prisma.tokens.findUnique({
       where: {
         user_id
       },
@@ -52,7 +52,7 @@ export async function loginSearch(idUser) {
   try {
     const user = await prisma.users.findFirst({
       where: {
-        user_id: idUser
+        id: idUser
       },
       select: {
         login: true
