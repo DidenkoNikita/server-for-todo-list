@@ -7,6 +7,7 @@ import cors from 'cors';
 import requestForUser from './request-handler/request-for-user.mjs';
 import requestForBoards from './request-handler/request-for-boards.mjs';
 import requestForTasks from './request-handler/request-for-tasks.mjs';
+import { checkTokenMiddleware } from './middleware/checkTokenMiddleware.mjs';
 
 const app = express();
 
@@ -16,26 +17,28 @@ const port = 7000;
 app.use(cors(
   {
     credentials: true,
-    origin: process.env.CLIENT_URL
+    origin: "*"
   }
 ));
 app.use(json());
+
+const secret = 'qwerty';
 app.use(cookieParser());
 
-app.post('/login', requestForUser.checkAccessToken);
+app.post('/login', requestForUser.login);
 app.post('/signup', requestForUser.createUser);
-app.get('/refresh', requestForUser.checkRefreshToken);
-app.post('/logout', requestForUser.logout);
-app.post('/user', requestForUser.getName);
+app.post('/user', checkTokenMiddleware, requestForUser.getName);
 
-app.post('/read_boards', requestForBoards.searchBoards);
-app.post('/boards', requestForBoards.createBoard);
-app.delete('/boards', requestForBoards.deleteBoard);
+app.post('/read_boards', checkTokenMiddleware, requestForBoards.searchBoards);
+app.post('/boards', checkTokenMiddleware, requestForBoards.createBoard);
+app.delete('/boards', checkTokenMiddleware, requestForBoards.deleteBoard);
+app.post('/update_boards', checkTokenMiddleware, requestForBoards.updateTitleBoard);
 
-app.post('/read_tasks', requestForTasks.searchTasks);
-app.post('/tasks', requestForTasks.createTask);
-app.delete('/tasks', requestForTasks.deleteTask);
-app.post('/tasks_completed', requestForTasks.completedTask);
+app.post('/read_tasks', checkTokenMiddleware, requestForTasks.searchTasks);
+app.post('/tasks', checkTokenMiddleware, requestForTasks.createTask);
+app.delete('/tasks', checkTokenMiddleware, requestForTasks.deleteTask);
+app.post('/tasks_completed', checkTokenMiddleware, requestForTasks.completedTask);
+app.post('/update_tasks', checkTokenMiddleware, requestForTasks.updateDescriptionTask);
 
 
 app.use((req, res) => {

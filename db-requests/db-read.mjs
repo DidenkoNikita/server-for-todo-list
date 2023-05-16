@@ -34,7 +34,7 @@ class DBRead {
           id: idUser
         },
         select: {
-          login: true
+          full_name: true
         }
       })
       return userName;

@@ -1,15 +1,13 @@
 import { generateAccessToken, generateRefreshToken } from "../authorization-service/generate-token.mjs";
 import { passwordHashing, passwordVerifying } from "../authorization-service/password-hashing.mjs";
-import { refresh } from "../authorization-service/refresh-token.mjs";
 import { userSearch } from "../db-helper-queries/search.js";
 import dbAuthentication from "../db-requests/db-authentication.mjs";
 import dbCreate from "../db-requests/db-create.mjs";
-import dbDelete from "../db-requests/db-delete.mjs";
 import dbRead from "../db-requests/db-read.mjs";
 import dbUpdate from "../db-requests/db-update.mjs";
 
 class RequestForUser {
-  async checkAccessToken(req, res, next) {
+  async login(req, res, next) {
     try {
       const {login, password} = req.body;
       const user = await dbAuthentication.authentication(login);
@@ -19,11 +17,8 @@ class RequestForUser {
         const idUser = await  userSearch(login);
         const id = idUser.id;
         const accessToken = generateAccessToken({ userId: id });
-        const data = {refreshToken, ...idUser};
-        await dbUpdate.updateTokens(data);
-        res.cookie('refreshToken', refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true});
-        res.cookie('accessToken', accessToken, {maxAge: 1800000, httpOnly: true});
-        res.json({user_id: id});
+        await dbUpdate.updateTokens(accessToken, id);
+        res.status(200).json({refreshToken, id})
       } else {
         res.status(400).json('Пароль неверный!');
       }
@@ -31,39 +26,22 @@ class RequestForUser {
       next(e);
     }
   }
-
-  async checkRefreshToken(req, res, next) {
-    try {
-      const {login} = req.body;
-      const idUser = await  userSearch(login);
-      const id = idUser.id;
-      const {refreshToken} = req.cookies;
-      const userData = await refresh(refreshToken, login, id);
-      res.cookie('refreshToken', userData.refresh_Token, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true});
-      res.status(200).json({...userData});
-    } catch(e) {
-      next(e);
-    }
-  }
-
+  
   async createUser (req, res, next) {
     try {
-      const {login, password} = req.body;
+      const {login, password, fullName} = req.body;
       const refreshToken = generateRefreshToken({ username: login });
       const passwordHash = await passwordHashing(password);
-      const user = await  dbCreate.createUser(login, passwordHash);
+      const user = await  dbCreate.createUser(login, passwordHash, fullName);
       const idUser = await userSearch(login);
       const id = idUser.id;
       const accessToken = generateAccessToken({ userId: id });
-      const data = {refreshToken, id};
-      await dbCreate.createTokens(data);
+      await dbCreate.createTokens(accessToken, id);
       if (user === null) {
         res.status(403);
         res.end();
       } else {
-        res.cookie('refreshToken', refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true});
-        res.cookie('accessToken', accessToken, {maxAge: 1800000, httpOnly: true});
-        res.json({id, accessToken});
+        res.json({id, refreshToken});
         res.end();
       }
     } catch(e) {
@@ -71,25 +49,20 @@ class RequestForUser {
     }
   }
 
-  async logout(req, res, next) {
+  async getName(req, res) {
     try {
-      const idUser = req.body.user_id;
-      await dbDelete.deleteToken(idUser);
-      res.clearCookie();
-      res.status(200);
+      if (req.body) {
+        const idUser = req.body.user_id;
+        const userName = await dbRead.readName(idUser);
+        const name = userName.full_name;
+        const authorizationHeader = req.headers.authorization;
+        const token = authorizationHeader.split(' ')[1];
+        res.status(200).json({name, token});
+      } else {
+        res.status(400);
+      }
     } catch(e) {
-      next(e);
-    }
-  }
-
-  async getName(req, res, next) {
-    try {
-      const idUser = req.body.user_id;
-      const userName = await dbRead.readName(idUser);
-      const name = userName.login;
-      res.status(200).json({name});
-    } catch(e) {
-      next(e);
+      return e;
     }
   }
 }

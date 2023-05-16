@@ -1,12 +1,13 @@
 import prisma from "../prisma/prismaClient.mjs";
 
 class DBCreate {
-  async createUser(login, password) {
+  async createUser(login, password, fullName) {
     try {
       const user = await prisma.users.create({
         data: {
           login,
-          password
+          password,
+          full_name: fullName
         }
       })
       return user;
@@ -15,18 +16,17 @@ class DBCreate {
     }
   }
 
-  async createTokens(data){
-    const {refreshToken, id: idUser} = data;
+  async createTokens(accessToken, id){
     try {
       const token = await prisma.tokens.create({
         data: {
-          user_id: idUser,
-          refresh_token: refreshToken
+          user_id: id,
+          access_token: accessToken
         }
       })
       return token;
     } catch(e) {
-      return e;
+      return console.log(e);
     }
   }
 

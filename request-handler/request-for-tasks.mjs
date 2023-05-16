@@ -1,5 +1,3 @@
-import { generateAccessToken } from "../authorization-service/generate-token.mjs";
-import { validateAccessToken, validateRefreshToken } from "../authorization-service/validate-token.mjs";
 import dbCreate from "../db-requests/db-create.mjs";
 import dbDelete from "../db-requests/db-delete.mjs";
 import dbRead from "../db-requests/db-read.mjs";
@@ -7,59 +5,84 @@ import dbUpdate from "../db-requests/db-update.mjs";
 
 class RequestForTasks {
   async searchTasks (req, res) {
-    const accessToken = req.cookies.accessToken;
-    const validate = validateAccessToken(accessToken);
-    if (!validate) { 
-      const refreshToken = req.cookies.refreshToken;
-      const validateRefresh = validateRefreshToken(refreshToken);
-      if (validateRefresh === null) {
-        res.status(402);
-      } else {
+    try {
+      if (req.body) {
         const idUser = req.body.user_id;
-        const newAccessToken = generateAccessToken({idUser});
-        res.cookie('accessToken', newAccessToken, {maxAge: 1800000, httpOnly: true});
         const tasks = await dbRead.readTask(idUser);
-        res.status(200).json(tasks);
+        const authorizationHeader = req.headers.authorization;
+        const token = authorizationHeader.split(' ')[1];
+        res.status(200).json({tasks, token});
+      } else {
+        res.status(400);
       }
-    } else {
-      const idUser = req.body.user_id;
-      const newAccessToken = generateAccessToken({idUser});
-      res.cookie('accessToken', newAccessToken, {maxAge: 1800000, httpOnly: true});
-      const tasks = await dbRead.readTask(idUser);
-      res.status(200).json(tasks);
+    } catch(e) {
+
     }
   }
 
   async createTask (req, res) {
-    const reqData = req.body;
-    if (reqData) {
-      const task = await dbCreate.createTask(reqData);
-      res.status(200).json(task);
-    } else {
-      res.status(422).json({error: 'Bad data'});
+    try {
+      if (req.body) {
+        const reqData = req.body;
+        const task = await dbCreate.createTask(reqData);
+        const authorizationHeader = req.headers.authorization;
+        const token = authorizationHeader.split(' ')[1];
+        res.status(200).json({task, token});
+      } else {
+        res.status(400);
+      }
+    } catch(e) {
+      return e;
     }
   }
 
   async deleteTask (req, res) {
-    const reqData = req.body;
-    if (reqData) {
-      const id = reqData.id;
-      await dbDelete.deleteTask(id);
-      res.status(200).json({id: reqData.id});
-    } else {
-      res.status(422).json({error: 'Bad data'});
+    try {
+      if (req.body) {
+        const id = req.body.id;
+        const task = await dbDelete.deleteTask(id);
+        const authorizationHeader = req.headers.authorization;
+        const token = authorizationHeader.split(' ')[1];
+        res.status(200).json({task, token});
+      } else {
+        res.status(400);
+      }
+    } catch(e) {
+      return e;
     }
   }
 
   async completedTask (req, res) {
-    const reqData = req.body;
-    if (reqData) {
-      const id = reqData.id;
-      const completed = !reqData.completed;
-      const task = await dbUpdate.updateCompletedTask(id, completed);
-      res.status(200).json(task);
-    } else {
-      res.status(422).json({error: 'Bad data'});
+    try {
+      if (req.body) {
+        const id = req.body.id;
+        const completed = !req.body.completed;
+        const task = await dbUpdate.updateCompletedTask(id, completed);
+        const authorizationHeader = req.headers.authorization;
+        const token = authorizationHeader.split(' ')[1];
+        res.status(200).json({task, token});
+      } else {
+        res.status(400);
+      }
+    } catch(e) {
+      return e;
+    }
+  }
+
+  async updateDescriptionTask (req, res) {
+    try {
+      if (req.body) {
+        const id = req.body.id;
+        const title = req.body.title;
+        const task = await dbUpdate.updateTitleTask(id, title);
+        const authorizationHeader = req.headers.authorization;
+        const token = authorizationHeader.split(' ')[1];
+        res.status(200).json({task, token});
+      } else {
+        res.status(400);
+      }
+    } catch(e) {
+      return e;
     }
   }
 }

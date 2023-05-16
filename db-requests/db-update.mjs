@@ -9,30 +9,76 @@ class DBUpdate {
         },
         data: {
           completed
+        },
+        select: {
+          id: true,
+          completed: true
         }
       })
+      console.log(tasks);
       return tasks;
     } catch(e) {
       return e;
     }
   }
   
-  async updateTokens(data){
-    const {refreshToken, id: idUser} = data;
+  async updateTokens(accessToken, idUser){
     try {
         const token = await prisma.tokens.upsert({
           where: {
             user_id: idUser,
           },
           update: {
-            refresh_token: refreshToken
+            access_token: accessToken
           },
           create: {
             user_id: idUser,
-            refresh_token: refreshToken
+            access_token: accessToken
           }
         })
       return token;
+    } catch(e) {
+      return console.log(e);
+    }
+  }
+
+  async updateTitleBoard(id, title) {
+    try {
+      const board = await prisma.boards.update({
+        where: {
+          id
+        },
+        data: {
+          title
+        },
+        select: {
+          id: true,
+          title: true
+        }
+      })
+      console.log(board);
+      return board;
+    } catch(e) {
+      return e;
+    }
+  }
+
+  async updateTitleTask(id, title) {
+    try {
+      const task = await prisma.tasks.update({
+        where: {
+          id
+        },
+        data: {
+          title
+        },
+        select: {
+          id: true,
+          title: true
+        }
+      })
+      console.log(task);
+      return task;
     } catch(e) {
       return e;
     }

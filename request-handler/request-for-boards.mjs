@@ -1,52 +1,72 @@
-import { generateAccessToken } from "../authorization-service/generate-token.mjs";
-import { validateAccessToken, validateRefreshToken } from "../authorization-service/validate-token.mjs";
 import dbCreate from "../db-requests/db-create.mjs";
 import dbDelete from "../db-requests/db-delete.mjs";
 import dbRead from "../db-requests/db-read.mjs";
+import dbUpdate from "../db-requests/db-update.mjs";
 
 class RequestForBoards {
-  async searchBoards (req, res) {
-    const accessToken = req.cookies.accessToken; 
-    const validate = validateAccessToken(accessToken);
-    if (!validate) {
-      const refreshToken = req.cookies.refreshToken;
-      const validateRefresh = validateRefreshToken(refreshToken);
-      if (validateRefresh === null) {
-        res.status(401);
-      } else {
+  async searchBoards(req, res) {
+    try {
+      if (req.body) {
         const idUser = req.body.user_id;
-        const newAccessToken = generateAccessToken({idUser});
-        res.cookie('accessToken', newAccessToken, {maxAge: 1800000, httpOnly: true});
         const boards = await dbRead.readBoard(idUser);
-        res.status(200).json(boards);
+        const authorizationHeader = req.headers.authorization;
+        const token = authorizationHeader.split(' ')[1];
+        res.status(200).json({boards, token});
+      } else {
+        res.status(400);
       }
-    } else {
-      const idUser = req.body.user_id;
-      const newAccessToken = generateAccessToken({idUser});
-      res.cookie('accessToken', newAccessToken, {maxAge: 1800000, httpOnly: true});
-      const boards = await dbRead.readBoard(idUser);
-      res.status(200).json(boards);
+    } catch(e) {
+      return e;
     }
   }
 
   async createBoard(req, res) {
-    const reqData = req.body;
-    if (reqData) {
-      const board = await dbCreate.createBoard(reqData);
-      res.status(200).json(board);
-    } else {
-      res.status(422).json({error: 'Bad data'});
+    try {
+      if (req.body) {
+        const reqData = req.body;
+        console.log(reqData);
+        const board = await dbCreate.createBoard(reqData);
+        const authorizationHeader = req.headers.authorization;
+        const token = authorizationHeader.split(' ')[1];
+        res.status(200).json({board, token});
+      } else {
+        res.status(400);
+      }
+    } catch(e) {
+      return e;
     }
   }
 
   async deleteBoard (req, res) {
-    const reqData = req.body;
-    if (reqData) {
-      const id = reqData.id;
-      await dbDelete.deleteBoard(id);
-      res.status(200).json({id: id});
-    } else {
-      res.status(422).json({error: 'Bad data'});
+    try {
+      if (req.body) {
+        const id = req.body.id;
+        await dbDelete.deleteBoard(id);
+        const authorizationHeader = req.headers.authorization;
+        const token = authorizationHeader.split(' ')[1];
+        res.status(200).json({id: id, token});
+      } else {
+        res.status(400);
+      }
+    } catch(e) {
+      return e;
+    }
+  }
+
+  async updateTitleBoard (req, res) {
+    try {
+      if (req.body) {
+        const id = req.body.id;
+        const title = req.body.title;
+        const board = await dbUpdate.updateTitleBoard(id, title);
+        const authorizationHeader = req.headers.authorization;
+        const token = authorizationHeader.split(' ')[1];
+        res.status(200).json({board, token});
+      } else {
+        res.status(400);
+      }
+    } catch(e) {
+      return e;
     }
   }
 }

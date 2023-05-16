@@ -31,3 +31,36 @@ export async function boardSearch(idUser) {
     return e;
   }
 }
+
+export async function tokenSearch(user_id) {
+  try {
+    const token = await prisma.tokens.findFirst({
+      where: {
+        user_id
+      },
+      select: {
+        access_token: true
+      }
+    })
+    return token;
+  } catch(e) {
+    return e;
+  }
+}
+
+export async function loginSearch(idUser) {
+  try {
+    const user = await prisma.users.findFirst({
+      where: {
+        user_id: idUser
+      },
+      select: {
+        login: true
+      }
+    })
+    return user
+  } catch(e) {
+    console.log(e);
+    return e;
+  }
+}

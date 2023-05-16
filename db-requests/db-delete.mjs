@@ -3,11 +3,16 @@ import prisma from "../prisma/prismaClient.mjs";
 class DBDelete {
   async deleteTask(id) {
     try {
-      await prisma.tasks.delete({
+      const task = await prisma.tasks.delete({
         where: {
           id
+        },
+        select: {
+          id: true
         }
       })
+      console.log(task);
+      return task;
     } catch(e) {
       return e;
     }

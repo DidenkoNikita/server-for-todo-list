@@ -8,19 +8,20 @@ datasource db {
 }
 
 model Users {
-  id       Int     @id @default(autoincrement())
-  login    String  @unique
-  password String
-  Tokens   Tokens?
-  Boards   Boards[]
-  Tasks    Tasks[]
+  id        Int     @id @default(autoincrement())
+  login     String  @unique
+  full_name String
+  password  String
+  Tokens    Tokens?
+  Boards    Boards[]
+  Tasks     Tasks[]
 }
 
 model Tokens {
   id            Int     @id @default(autoincrement())
   user_id       Int     @unique
   user          Users   @relation(fields: [user_id], references: [id])
-  refresh_token String? @unique
+  access_token String? @unique
 }
 
 model Boards {
