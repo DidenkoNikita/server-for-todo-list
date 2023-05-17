@@ -12,7 +12,7 @@ class DBCreate {
       })
       return user;
     } catch(e) {
-      return e;
+      return console.log(e);
     }
   }
 
@@ -41,7 +41,7 @@ class DBCreate {
       })
       return board;
     } catch(e) {
-      return e;
+      return console.log(e);
     }
   }
 
@@ -58,7 +58,7 @@ class DBCreate {
       })
       return task;
     } catch(e) {
-      return e;
+      return console.log(e);
     }
   }
 }

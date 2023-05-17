@@ -18,7 +18,7 @@ class DBUpdate {
       console.log(tasks);
       return tasks;
     } catch(e) {
-      return e;
+      return console.log(e);
     }
   }
   
@@ -59,7 +59,7 @@ class DBUpdate {
       console.log(board);
       return board;
     } catch(e) {
-      return e;
+      return console.log(e);
     }
   }
 
@@ -80,7 +80,7 @@ class DBUpdate {
       console.log(task);
       return task;
     } catch(e) {
-      return e;
+      return console.log(e);
     }
   }
 }

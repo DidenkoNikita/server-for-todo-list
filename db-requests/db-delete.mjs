@@ -14,7 +14,7 @@ class DBDelete {
       console.log(task);
       return task;
     } catch(e) {
-      return e;
+      return console.log(e);
     }
   }
 
@@ -31,7 +31,7 @@ class DBDelete {
         }
       })
     } catch(e) {
-      return e;
+      return console.log(e);
     }
   }
 
@@ -43,7 +43,7 @@ class DBDelete {
         }
       })
     } catch(e) {
-      return e;
+      return console.log(e);
     }
   }
 }

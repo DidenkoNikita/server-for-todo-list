@@ -11,7 +11,7 @@ class DBRead {
       console.log(boards);
       return boards;
     } catch(e) {
-      return e;
+      return console.log(e);
     }
   }
 
@@ -24,7 +24,7 @@ class DBRead {
       })
       return tasks;
     } catch(e) {
-      return e;
+      return console.log(e);
     }
   }
 
@@ -40,7 +40,7 @@ class DBRead {
       })
       return userName;
     } catch(e) {
-      return e;
+      return console.log(e);
     }
   }
 }
