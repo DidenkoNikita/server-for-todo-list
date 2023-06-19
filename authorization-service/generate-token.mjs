@@ -6,5 +6,5 @@ export function generateAccessToken(id) {
 }
 
 export  function generateRefreshToken(username) {
-  return sign(username, process.env.JWT_REFRESH_SECRET, { expiresIn: '30m' });
+  return sign(username, process.env.JWT_REFRESH_SECRET, { expiresIn: '30d' });
 }

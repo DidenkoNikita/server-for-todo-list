@@ -7,7 +7,7 @@ import dbRead from "../db-requests/db-read.mjs";
 import dbUpdate from "../db-requests/db-update.mjs";
 
 class RequestForUser {
-  async login(req, res, next) {
+  async login(req, res) {
     try {
       const {login, password} = req.body;
       const user = await dbAuthentication.authentication(login);
@@ -23,29 +23,27 @@ class RequestForUser {
         res.status(400).json('Пароль неверный!');
       }
     } catch(e) {
-      next(e);
+      return e;
     }
   }
   
-  async createUser (req, res, next) {
+  async createUser(req, res ) {
     try {
-      const {login, password, fullName} = req.body;
+      const { login, password, fullName } = req.body;
       const refreshToken = generateRefreshToken({ username: login });
       const passwordHash = await passwordHashing(password);
-      const user = await  dbCreate.createUser(login, passwordHash, fullName);
+      const user = await dbCreate.createUser(login, passwordHash, fullName);
       const idUser = await userSearch(login);
       const id = idUser.id;
       const accessToken = generateAccessToken({ userId: id });
-      await dbCreate.createTokens(accessToken, id);
-      if (user === null) {
-        res.status(403);
-        res.end();
+      if (user === undefined) {
+        res.status(409).json({ error: 'Аккаунт с таким логином уже существует' });
       } else {
-        res.json({id, refreshToken});
-        res.end();
+        await dbCreate.createTokens(accessToken, id);
+        res.json({ id, refreshToken });
       }
-    } catch(e) {
-      next(e);
+    } catch (e) {
+      return e;
     }
   }
 

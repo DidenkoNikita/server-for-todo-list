@@ -4,7 +4,7 @@ export async function userSearch(login) {
   try {
     const data = await prisma.users.findUnique({
       where: {
-        login: login
+        login
       },
       select: {
         id: true
@@ -61,6 +61,19 @@ export async function loginSearch(idUser) {
     return user
   } catch(e) {
     console.log(e);
+    return e;
+  }
+}
+
+export async function searchLogin(login) {
+  try {
+    const user = await prisma.findFirst({
+      where: {
+        login
+      }
+    })
+    return user;
+  } catch(e) {
     return e;
   }
 }

@@ -46,13 +46,13 @@ class DBCreate {
   }
 
   async createTask(data) {
-    const {title, idBoard, idUser, completed} = data;
+    const {description, id, user_id, completed} = data;
     try {
       const task = await prisma.tasks.create({
         data: {
-          user_id: idUser,
-          board_id: idBoard,
-          title,
+          user_id,
+          board_id: id,
+          title: description,
           completed
         }
       })

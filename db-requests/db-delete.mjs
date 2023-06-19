@@ -11,7 +11,6 @@ class DBDelete {
           id: true
         }
       })
-      console.log(task);
       return task;
     } catch(e) {
       return console.log(e);

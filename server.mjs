@@ -49,3 +49,5 @@ app.use((req, res) => {
 app.listen(port, host, function () {
   console.log(`Server listens http://${host}:${port}`)
 });
+
+export default app;

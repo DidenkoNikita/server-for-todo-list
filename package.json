@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "server.mjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha ./tests/*.spec.js",
     "start": "nodemon server.mjs"
   },
   "author": "",
@@ -28,6 +28,9 @@
   },
   "description": "",
   "devDependencies": {
-    "prisma": "^4.11.0"
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "prisma": "^4.11.0",
+    "supertest": "^6.3.3"
   }
 }

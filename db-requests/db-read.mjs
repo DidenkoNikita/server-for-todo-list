@@ -8,7 +8,6 @@ class DBRead {
           user_id: idUser
         }
       })
-      console.log(boards);
       return boards;
     } catch(e) {
       return console.log(e);

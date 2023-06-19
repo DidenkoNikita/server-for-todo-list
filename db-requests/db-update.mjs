@@ -15,7 +15,6 @@ class DBUpdate {
           completed: true
         }
       })
-      console.log(tasks);
       return tasks;
     } catch(e) {
       return console.log(e);
@@ -56,7 +55,6 @@ class DBUpdate {
           title: true
         }
       })
-      console.log(board);
       return board;
     } catch(e) {
       return console.log(e);
@@ -77,7 +75,6 @@ class DBUpdate {
           title: true
         }
       })
-      console.log(task);
       return task;
     } catch(e) {
       return console.log(e);

@@ -57,6 +57,7 @@ class RequestForTasks {
       if (req.body) {
         const id = req.body.id;
         const completed = !req.body.completed;
+        console.log(id, completed);
         const task = await dbUpdate.updateCompletedTask(id, completed);
         const authorizationHeader = req.headers.authorization;
         const token = authorizationHeader.split(' ')[1];

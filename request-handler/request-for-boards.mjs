@@ -24,7 +24,6 @@ class RequestForBoards {
     try {
       if (req.body) {
         const reqData = req.body;
-        console.log(reqData);
         const board = await dbCreate.createBoard(reqData);
         const authorizationHeader = req.headers.authorization;
         const token = authorizationHeader.split(' ')[1];
