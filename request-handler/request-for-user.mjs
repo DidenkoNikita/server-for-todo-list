@@ -20,7 +20,7 @@ class RequestForUser {
         await dbUpdate.updateTokens(accessToken, id);
         res.status(200).json({refreshToken, id})
       } else {
-        res.status(400).json('Пароль неверный!');
+        res.status(400).json('Wrong password!');
       }
     } catch(e) {
       return e;
@@ -37,7 +37,7 @@ class RequestForUser {
       const id = idUser.id;
       const accessToken = generateAccessToken({ userId: id });
       if (user === undefined) {
-        res.status(409).json({ error: 'Аккаунт с таким логином уже существует' });
+        res.status(409).json({ error: 'An account with this username already exists' });
       } else {
         await dbCreate.createTokens(accessToken, id);
         res.json({ id, refreshToken });

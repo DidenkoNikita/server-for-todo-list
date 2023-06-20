@@ -14,7 +14,7 @@ export const checkTokenMiddleware =  async (req, res, next) => {
       const token = await tokenSearch(user_id);
       const validateAccess = validateAccessToken(token.access_token);
       if (validateAccess === null) {
-        res.status(401).send('Недействительный токен');
+        res.status(401).send('Invalid token');
       } else {
         const idUser = req.body.user_id;
         const {login} = await loginSearch(idUser);
@@ -23,6 +23,6 @@ export const checkTokenMiddleware =  async (req, res, next) => {
       }
     }
   } else {
-    res.status(401).send('Отсутствует заголовок Authorization');
+    res.status(401).send('Missing Authorization header');
   }
 };

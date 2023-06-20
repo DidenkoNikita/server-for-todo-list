@@ -25,7 +25,7 @@ class DBUpdate {
     try {
         const token = await prisma.tokens.upsert({
           where: {
-            user_id: idUser,
+            user_id: idUser
           },
           update: {
             access_token: accessToken

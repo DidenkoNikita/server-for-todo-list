@@ -7,6 +7,7 @@ import cors from 'cors';
 import requestForUser from './request-handler/request-for-user.mjs';
 import requestForBoards from './request-handler/request-for-boards.mjs';
 import requestForTasks from './request-handler/request-for-tasks.mjs';
+
 import { checkTokenMiddleware } from './middleware/checkTokenMiddleware.mjs';
 
 const app = express();
