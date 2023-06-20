@@ -53,9 +53,7 @@ class RequestForUser {
         const idUser = req.body.user_id;
         const userName = await dbRead.readName(idUser);
         const name = userName.full_name;
-        const authorizationHeader = req.headers.authorization;
-        const token = authorizationHeader.split(' ')[1];
-        res.status(200).json({name, token});
+        res.status(200).json({name});
       } else {
         res.status(400);
       }

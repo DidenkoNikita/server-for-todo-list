@@ -8,8 +8,7 @@ describe('Test /login', () => {
       .post('/login')
       .send({login: 'nikitadidenko2@gmail.com', password: '1234'})
       .set('Accept', 'application/json')
-    console.log(response.body);
     expect(response.status).to.equal(200);
-    expect(response.body).to.have.any.keys('refreshToken', 'id')
+    expect(response.body).to.have.any.keys('refreshToken', 'id');
   });
 });

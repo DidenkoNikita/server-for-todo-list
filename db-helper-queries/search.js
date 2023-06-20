@@ -60,7 +60,6 @@ export async function loginSearch(idUser) {
     })
     return user
   } catch(e) {
-    console.log(e);
     return e;
   }
 }

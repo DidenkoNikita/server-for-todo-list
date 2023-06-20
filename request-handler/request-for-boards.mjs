@@ -9,9 +9,7 @@ class RequestForBoards {
       if (req.body) {
         const idUser = req.body.user_id;
         const boards = await dbRead.readBoard(idUser);
-        const authorizationHeader = req.headers.authorization;
-        const token = authorizationHeader.split(' ')[1];
-        res.status(200).json({boards, token});
+        res.status(200).json({boards});
       } else {
         res.status(400);
       }
@@ -25,9 +23,7 @@ class RequestForBoards {
       if (req.body) {
         const reqData = req.body;
         const board = await dbCreate.createBoard(reqData);
-        const authorizationHeader = req.headers.authorization;
-        const token = authorizationHeader.split(' ')[1];
-        res.status(200).json({board, token});
+        res.status(200).json({board});
       } else {
         res.status(400);
       }
@@ -41,9 +37,7 @@ class RequestForBoards {
       if (req.body) {
         const id = req.body.id;
         await dbDelete.deleteBoard(id);
-        const authorizationHeader = req.headers.authorization;
-        const token = authorizationHeader.split(' ')[1];
-        res.status(200).json({id: id, token});
+        res.status(200).json({id: id});
       } else {
         res.status(400);
       }
@@ -58,9 +52,7 @@ class RequestForBoards {
         const id = req.body.id;
         const title = req.body.title;
         const board = await dbUpdate.updateTitleBoard(id, title);
-        const authorizationHeader = req.headers.authorization;
-        const token = authorizationHeader.split(' ')[1];
-        res.status(200).json({board, token});
+        res.status(200).json({board});
       } else {
         res.status(400);
       }
